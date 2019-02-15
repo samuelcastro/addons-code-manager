@@ -5,7 +5,14 @@ import {
 } from '../reducers/api';
 import configureStore from '../configureStore';
 
-import { HttpMethod, callApi, getVersionFile, logOutFromServer } from '.';
+import {
+  HttpMethod,
+  callApi,
+  getCurrentUserProfile,
+  getVersionFile,
+  isErrorResponse,
+  logOutFromServer,
+} from '.';
 
 describe(__filename, () => {
   const getApiState = ({ authToken = '12345' } = {}) => {
@@ -145,6 +152,20 @@ describe(__filename, () => {
     });
   });
 
+  describe('isErrorResponse', () => {
+    it('returns true if a response object is an error', () => {
+      const response = { error: 'this is an error' };
+
+      expect(isErrorResponse(response)).toEqual(true);
+    });
+
+    it('returns false if a response object is not an error', () => {
+      const response = { id: 123 };
+
+      expect(isErrorResponse(response)).toEqual(false);
+    });
+  });
+
   describe('getVersionFile', () => {
     it('calls the API to retrieve default version file information', async () => {
       const addonId = 999;
@@ -160,6 +181,7 @@ describe(__filename, () => {
         },
       );
     });
+
     it('calls the API to retrieve information for a specific version file', async () => {
       const path = 'test.js';
       const addonId = 999;
@@ -189,6 +211,17 @@ describe(__filename, () => {
       expect(fetch).toHaveBeenCalledWith('/api/v4/accounts/session/', {
         headers: {},
         method: HttpMethod.DELETE,
+      });
+    });
+  });
+
+  describe('getCurrentUserProfile', () => {
+    it('calls the API to retrieve the current logged-in user profile', async () => {
+      await getCurrentUserProfile(defaultApiState);
+
+      expect(fetch).toHaveBeenCalledWith(`/api/v4/accounts/profile/`, {
+        headers: {},
+        method: HttpMethod.GET,
       });
     });
   });

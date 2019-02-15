@@ -5,12 +5,11 @@ import { Col } from 'react-bootstrap';
 
 import { ApplicationState, ConnectedReduxProps } from '../../configureStore';
 import { ApiState } from '../../reducers/api';
-import { getVersionFile } from '../../api';
+import { isErrorResponse, getVersionFile } from '../../api';
 import FileTree from '../../components/FileTree';
 import {
   actions as versionActions,
   Version,
-  ExternalVersion,
   getVersionInfo,
 } from '../../reducers/versions';
 
@@ -35,13 +34,13 @@ export class BrowseBase extends React.Component<Props> {
     const { apiState, dispatch, match } = this.props;
     const { addonId, versionId } = match.params;
 
-    const response = (await getVersionFile({
+    const response = await getVersionFile({
       addonId: parseInt(addonId, 10),
       apiState,
       versionId: parseInt(versionId, 10),
-    })) as ExternalVersion;
+    });
 
-    if (response && response.id) {
+    if (!isErrorResponse(response)) {
       dispatch(versionActions.loadVersionInfo({ version: response }));
     }
   }
