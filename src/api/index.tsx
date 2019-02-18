@@ -20,7 +20,7 @@ type CallApiParams = {
   query?: { [key: string]: string };
 };
 
-type ErrorResponseType = { error: Error };
+export type ErrorResponseType = { error: Error };
 
 type CallApiResponse<SuccessResponseType> =
   | SuccessResponseType

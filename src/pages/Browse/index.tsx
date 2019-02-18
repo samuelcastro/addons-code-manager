@@ -12,6 +12,7 @@ import {
   Version,
   getVersionInfo,
 } from '../../reducers/versions';
+import { actions as notificationActions } from '../../reducers/notifications';
 
 type PropsFromRouter = {
   addonId: string;
@@ -40,7 +41,9 @@ export class BrowseBase extends React.Component<Props> {
       versionId: parseInt(versionId, 10),
     });
 
-    if (!isErrorResponse(response)) {
+    if (isErrorResponse(response)) {
+      dispatch(notificationActions.error({ error: response }));
+    } else {
       dispatch(versionActions.loadVersionInfo({ version: response }));
     }
   }

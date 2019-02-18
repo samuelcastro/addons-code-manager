@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Container, Row } from 'react-bootstrap';
+import { Alert, Col, Container, Row } from 'react-bootstrap';
 import {
   Route,
   RouteComponentProps,
@@ -23,6 +23,10 @@ import Browse from '../../pages/Browse';
 import Index from '../../pages/Index';
 import NotFound from '../../pages/NotFound';
 import { gettext } from '../../utils';
+import {
+  Notification,
+  actions as notificationActions,
+} from '../../reducers/notifications';
 
 type PublicProps = {
   authToken: string | null;
@@ -31,6 +35,7 @@ type PublicProps = {
 type PropsFromState = {
   apiState: ApiState;
   loading: boolean;
+  notifications: Notification[];
   profile: User | null;
 };
 
@@ -56,10 +61,39 @@ export class AppBase extends React.Component<Props> {
     if (!profile && prevProps.apiState.authToken !== apiState.authToken) {
       const response = await getCurrentUserProfile(apiState);
 
-      if (!isErrorResponse(response)) {
+      if (isErrorResponse(response)) {
+        dispatch(notificationActions.error({ error: response }));
+      } else {
         dispatch(userActions.loadCurrentUser({ user: response }));
       }
     }
+  }
+
+  renderNotifications() {
+    const { dispatch, notifications } = this.props;
+
+    if (notifications.length < 1) {
+      return null;
+    }
+
+    return (
+      <Row>
+        <Col>
+          {notifications.map((notification) => (
+            <Alert
+              key={notification.id}
+              variant={notification.variant}
+              dismissible
+              onClose={() =>
+                dispatch(notificationActions.close({ id: notification.id }))
+              }
+            >
+              {notification.message}
+            </Alert>
+          ))}
+        </Col>
+      </Row>
+    );
   }
 
   render() {
@@ -86,6 +120,8 @@ export class AppBase extends React.Component<Props> {
         {!loading && <Navbar />}
 
         <Container className={styles.container} fluid>
+          {this.renderNotifications()}
+
           <Row
             className={makeClassName(styles.content, styles.isoading, {
               [styles.isLoading]: loading,
@@ -116,6 +152,7 @@ const mapStateToProps = (
   return {
     apiState: state.api,
     loading,
+    notifications: state.notifications.notifications,
     profile,
   };
 };
