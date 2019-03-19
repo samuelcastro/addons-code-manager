@@ -73,10 +73,14 @@ const getIconForType = (type: string | null) => {
       return 'times-circle';
     case 'warning':
       return 'exclamation-triangle';
+    case 'known-library':
+      return 'check-circle';
     default:
       return 'info-circle';
   }
 };
+
+export const LINTER_KNOW_LIBRARY_CODE = 'KNOWN_LIBRARY';
 
 class FileTreeNodeBase<TreeNodeType> extends React.Component<PublicProps> {
   render() {
@@ -101,13 +105,22 @@ class FileTreeNodeBase<TreeNodeType> extends React.Component<PublicProps> {
     let linterType = null;
     if (linterMessages && hasLinterMessages) {
       linterType = findMostSevereTypeForPath(linterMessages, node.id);
+      let title = getTitleForType(linterType, isFolder);
+
+      if (
+        linterType === 'notice' &&
+        linterMessages[node.id] &&
+        linterMessages[node.id].global.some(({ code }) =>
+          code.includes(LINTER_KNOW_LIBRARY_CODE),
+        )
+      ) {
+        linterType = 'known-library';
+        title = gettext('This is a known library');
+      }
 
       nodeIcons = (
         <span className={styles.nodeIcons}>
-          <FontAwesomeIcon
-            icon={getIconForType(linterType)}
-            title={getTitleForType(linterType, isFolder)}
-          />
+          <FontAwesomeIcon icon={getIconForType(linterType)} title={title} />
         </span>
       );
     }
@@ -119,6 +132,7 @@ class FileTreeNodeBase<TreeNodeType> extends React.Component<PublicProps> {
         [styles.hasLinterMessages]: hasLinterMessages,
         [styles.hasLinterErrors]: linterType === 'error',
         [styles.hasLinterWarnings]: linterType === 'warning',
+        [styles.isKnownLibrary]: linterType === 'known-library',
       }),
       onClick: () => onSelect(node.id),
     };

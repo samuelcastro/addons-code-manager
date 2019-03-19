@@ -11,7 +11,11 @@ import {
 } from '../../test-helpers';
 import styles from './styles.module.scss';
 
-import FileTreeNode, { PublicProps, findMostSevereTypeForPath } from '.';
+import FileTreeNode, {
+  LINTER_KNOW_LIBRARY_CODE,
+  PublicProps,
+  findMostSevereTypeForPath,
+} from '.';
 
 const fakeGetToggleProps = () => ({
   onClick: jest.fn(),
@@ -69,9 +73,9 @@ describe(__filename, () => {
     return getMessageMap(createFakeExternalLinterResult({ messages }));
   };
 
-  const renderWithLinterMessage = ({
+  const renderWithLinterMessages = ({
     version = createInternalVersion(fakeVersion),
-    message = fakeExternalLinterMessage,
+    messages = [fakeExternalLinterMessage],
     treefoldRenderProps = {},
   }) => {
     const renderProps = getTreefoldRenderProps({
@@ -81,7 +85,7 @@ describe(__filename, () => {
 
     return render({
       ...renderProps,
-      linterMessages: _getMessageMap([message]),
+      linterMessages: _getMessageMap(messages),
       version,
     });
   };
@@ -258,8 +262,8 @@ describe(__filename, () => {
       type: type as ExternalLinterMessage['type'],
     };
 
-    const root = renderWithLinterMessage({
-      message,
+    const root = renderWithLinterMessages({
+      messages: [message],
       treefoldRenderProps: {
         isFolder: false,
       },
@@ -288,8 +292,8 @@ describe(__filename, () => {
         type: type as ExternalLinterMessage['type'],
       };
 
-      const root = renderWithLinterMessage({
-        message,
+      const root = renderWithLinterMessages({
+        messages: [message],
         treefoldRenderProps: {
           id: message.file,
           isFolder: true,
@@ -313,8 +317,8 @@ describe(__filename, () => {
       file: 'manifest.json',
     };
 
-    const root = renderWithLinterMessage({
-      message,
+    const root = renderWithLinterMessages({
+      messages: [message],
       treefoldRenderProps: {
         id: 'some/other/file.js',
       },
@@ -329,8 +333,8 @@ describe(__filename, () => {
       file: 'src/manifest.json',
     };
 
-    const root = renderWithLinterMessage({
-      message,
+    const root = renderWithLinterMessages({
+      messages: [message],
       treefoldRenderProps: {
         id: 'src/',
         isFolder: true,
@@ -338,6 +342,62 @@ describe(__filename, () => {
     });
 
     expect(root.find(`.${styles.hasLinterMessages}`)).toHaveLength(1);
+  });
+
+  it('renders a file node that is a known library', () => {
+    const message: ExternalLinterMessage = {
+      ...fakeExternalLinterMessage,
+      file: 'jquery.js',
+      id: [LINTER_KNOW_LIBRARY_CODE],
+      line: null,
+      type: 'notice',
+    };
+
+    const root = renderWithLinterMessages({
+      messages: [message],
+      treefoldRenderProps: {
+        id: message.file,
+        isFolder: false,
+      },
+    });
+
+    expect(root.find(`.${styles.isKnownLibrary}`)).toHaveLength(1);
+
+    const nodeIcons = root.find(`.${styles.nodeIcons}`);
+    expect(nodeIcons).toHaveLength(1);
+    expect(nodeIcons.find(FontAwesomeIcon)).toHaveProp('icon', 'check-circle');
+    expect(nodeIcons.find(FontAwesomeIcon).prop('title')).toMatch(
+      new RegExp('known library'),
+    );
+  });
+
+  it('does not override a more severe type when a file node is a known library with several linter messages', () => {
+    const file = 'jquery.js';
+    const messages: ExternalLinterMessage[] = [
+      {
+        ...fakeExternalLinterMessage,
+        file,
+        id: [LINTER_KNOW_LIBRARY_CODE],
+        line: null,
+        type: 'notice',
+      },
+      {
+        ...fakeExternalLinterMessage,
+        file,
+        type: 'error',
+      },
+    ];
+
+    const root = renderWithLinterMessages({
+      messages,
+      treefoldRenderProps: {
+        id: file,
+        isFolder: false,
+      },
+    });
+
+    expect(root.find(`.${styles.isKnownLibrary}`)).toHaveLength(0);
+    expect(root.find(`.${styles.hasLinterErrors}`)).toHaveLength(1);
   });
 
   describe('findMostSevereTypeForPath', () => {
