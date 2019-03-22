@@ -1,9 +1,11 @@
 .container {
 }
 
-.content {
-  min-height: 100vh;
+.content:first-child {
   padding-top: 15px;
+}
+
+.errors {
 }
 
 .loginMessage,
@@ -14,6 +16,7 @@
   font-size: 1.2em;
   font-weight: 500;
   justify-content: center;
+  min-height: 100vh;
   text-align: center;
 
   p {

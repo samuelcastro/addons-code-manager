@@ -195,6 +195,7 @@ export const createServer = ({
       helmet.contentSecurityPolicy({
         directives: {
           ...prodCSP,
+          scriptSrc: ["'self'", "'unsafe-inline'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           connectSrc: ["'self'"],
         },
