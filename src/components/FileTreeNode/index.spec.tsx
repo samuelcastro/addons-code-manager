@@ -12,7 +12,7 @@ import {
 import styles from './styles.module.scss';
 
 import FileTreeNode, {
-  LINTER_KNOW_LIBRARY_CODE,
+  LINTER_KNOWN_LIBRARY_CODE,
   PublicProps,
   findMostSevereTypeForPath,
 } from '.';
@@ -348,7 +348,7 @@ describe(__filename, () => {
     const message: ExternalLinterMessage = {
       ...fakeExternalLinterMessage,
       file: 'jquery.js',
-      id: [LINTER_KNOW_LIBRARY_CODE],
+      id: [LINTER_KNOWN_LIBRARY_CODE],
       line: null,
       type: 'notice',
     };
@@ -367,7 +367,7 @@ describe(__filename, () => {
     expect(nodeIcons).toHaveLength(1);
     expect(nodeIcons.find(FontAwesomeIcon)).toHaveProp('icon', 'check-circle');
     expect(nodeIcons.find(FontAwesomeIcon).prop('title')).toMatch(
-      new RegExp('known library'),
+      /known library/,
     );
   });
 
@@ -377,7 +377,7 @@ describe(__filename, () => {
       {
         ...fakeExternalLinterMessage,
         file,
-        id: [LINTER_KNOW_LIBRARY_CODE],
+        id: [LINTER_KNOWN_LIBRARY_CODE],
         line: null,
         type: 'notice',
       },

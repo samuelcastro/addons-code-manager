@@ -80,7 +80,7 @@ const getIconForType = (type: string | null) => {
   }
 };
 
-export const LINTER_KNOW_LIBRARY_CODE = 'KNOWN_LIBRARY';
+export const LINTER_KNOWN_LIBRARY_CODE = 'KNOWN_LIBRARY';
 
 class FileTreeNodeBase<TreeNodeType> extends React.Component<PublicProps> {
   render() {
@@ -111,7 +111,7 @@ class FileTreeNodeBase<TreeNodeType> extends React.Component<PublicProps> {
         linterType === 'notice' &&
         linterMessages[node.id] &&
         linterMessages[node.id].global.some(({ code }) =>
-          code.includes(LINTER_KNOW_LIBRARY_CODE),
+          code.includes(LINTER_KNOWN_LIBRARY_CODE),
         )
       ) {
         linterType = 'known-library';
